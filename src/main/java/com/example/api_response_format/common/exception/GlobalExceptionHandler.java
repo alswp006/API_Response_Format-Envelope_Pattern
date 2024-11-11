@@ -11,37 +11,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<?>> handleIllegalArgumentException(IllegalArgumentException ex, HttpServletRequest request) {
-        ErrorResponse errorResponse = ErrorResponse.of(
-                ErrorCode.RESOURCE_NOT_FOUND,
-                request.getRequestURI()
-        );
 
-        return ResponseEntity.status(ErrorCode.RESOURCE_NOT_FOUND.getStatus())
-                .body(ApiResponse.error(errorResponse));
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponse<?>> handleNotFoundException(ResourceNotFoundException ex, HttpServletRequest request) {
+        ErrorResponse errorResponse = ErrorResponse.of(ex.getErrorCode(), request.getRequestURI());
+        return new ResponseEntity<>(ApiResponse.error(errorResponse), ex.getErrorCode().getStatus());
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ApiResponse<String>> handleRuntimeException(RuntimeException ex, HttpServletRequest request) {
-        ErrorResponse errorResponse = ErrorResponse.of(
-                ErrorCode.INTERNAL_SERVER_ERROR,
-                request.getRequestURI()
-        );
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error(errorResponse));
-
-    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<?>> handleGeneralException(Exception ex, HttpServletRequest request) {
-        ErrorResponse errorResponse = ErrorResponse.of(
-                ErrorCode.INTERNAL_SERVER_ERROR,
-                request.getRequestURI()
-        );
-
-        return ResponseEntity.status(ErrorCode.INTERNAL_SERVER_ERROR.getStatus())
-                .body(ApiResponse.error(errorResponse));
+        ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR, request.getRequestURI());
+        return new ResponseEntity<>(ApiResponse.error(errorResponse), ErrorCode.INTERNAL_SERVER_ERROR.getStatus());
     }
 }
